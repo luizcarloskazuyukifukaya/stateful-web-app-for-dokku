@@ -12,6 +12,7 @@
             --bg-color: #f8f9fa;
             --sidebar-bg: #202124;
             --text-color: #3c4043;
+            --error-color: #d93025;
         }
 
         body {
@@ -75,7 +76,7 @@
         h1 { margin-top: 0; color: var(--primary-color); }
 
         /* Form Styling */
-        .form-group { margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; position: relative; }
         label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
         select, input, textarea {
             width: 100%;
@@ -86,6 +87,13 @@
             font-size: 1rem;
         }
         textarea { min-height: 150px; font-family: monospace; }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
 
         button {
             background-color: var(--primary-color);
@@ -99,6 +107,7 @@
         }
 
         button:hover { background-color: #1557b0; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
 
         /* Modal */
         .modal-overlay {
@@ -152,12 +161,6 @@
             line-height: 1.6;
             color: #3c4043;
         }
-        .activity-details blockquote {
-            border-left: 4px solid #dadce0;
-            margin: 0;
-            padding-left: 1rem;
-            color: #5f6368;
-        }
     </style>
 </head>
 <body>
@@ -168,7 +171,6 @@
     </div>
 
     <div class="main-content">
-        <!-- Log Activities View -->
         <div id="log-view" class="container">
             <h1>Log New Activity</h1>
             <form id="activity-form">
@@ -186,28 +188,27 @@
                 </div>
                 <div class="form-group">
                     <label>Start Time</label>
-                    <input type="datetime-local" id="start" required>
+                    <input type="datetime-local" id="start" required onchange="validateTimes()">
                 </div>
                 <div class="form-group">
                     <label>End Time</label>
-                    <input type="datetime-local" id="end" required>
+                    <input type="datetime-local" id="end" required onchange="validateTimes()">
+                    <div id="time-error" class="error-message">End time cannot be earlier than start time.</div>
                 </div>
                 <div class="form-group">
                     <label>Details (Markdown supported)</label>
                     <textarea id="details" placeholder="What did you do?"></textarea>
                 </div>
-                <button type="button" onclick="confirmSave()">Save Activity</button>
+                <button type="button" id="save-btn" onclick="confirmSave()">Save Activity</button>
             </form>
         </div>
 
-        <!-- View Activities View -->
         <div id="view-view" class="container" style="display: none;">
             <h1>Recent Activities</h1>
             <div id="activities-list">Loading...</div>
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
     <div id="modal-overlay" class="modal-overlay">
         <div class="modal">
             <h3>Confirm Entry</h3>
@@ -220,7 +221,6 @@
     </div>
 
     <script>
-        // Set default times
         function setDefaultTimes() {
             const now = new Date();
             const year = now.getFullYear();
@@ -232,6 +232,27 @@
             const formatted = `${year}-${month}-${day}T${hours}:${minutes}`;
             document.getElementById('start').value = formatted;
             document.getElementById('end').value = formatted;
+        }
+
+        function validateTimes() {
+            const startStr = document.getElementById('start').value;
+            const endStr = document.getElementById('end').value;
+            const errorEl = document.getElementById('time-error');
+            const saveBtn = document.getElementById('save-btn');
+
+            if (startStr && endStr) {
+                const start = new Date(startStr);
+                const end = new Date(endStr);
+                
+                if (end < start) {
+                    errorEl.style.display = 'block';
+                    saveBtn.disabled = true;
+                    return false;
+                }
+            }
+            errorEl.style.display = 'none';
+            saveBtn.disabled = false;
+            return true;
         }
 
         function showView(view) {
@@ -246,6 +267,8 @@
         }
 
         function confirmSave() {
+            if (!validateTimes()) return;
+
             const type = document.getElementById('type').value;
             const start = document.getElementById('start').value;
             const end = document.getElementById('end').value;
@@ -281,7 +304,6 @@
                     closeModal();
                     alert('Activity saved!');
                     showView('view');
-                    // Reset form but keep type for convenience
                     document.getElementById('details').value = '';
                     setDefaultTimes();
                 } else {
@@ -325,7 +347,6 @@
             }
         }
 
-        // Initialize
         setDefaultTimes();
     </script>
 </body>

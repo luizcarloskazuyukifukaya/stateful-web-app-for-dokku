@@ -1,0 +1,11 @@
+tunnel: 499947ce-14d0-427e-b0f7-cb73a9644f89
+credentials-file: /etc/cloudflared/499947ce-14d0-427e-b0f7-cb73a9644f89.json
+
+ingress:
+  - hostname: app1.luizcarloskazuyukifukaya.org
+    service: http://localhost:8080
+  - hostname: app2.luizcarloskazuyukifukaya.org
+    service: http://localhost:8081
+  - hostname: web3.luizcarloskazuyukifukaya.org
+    service: http://localhost:8082
+  - service: http_status:404

@@ -1,0 +1,21 @@
+{
+  "name": "stateful-web-app-for-dokku",
+  "version": "1.0.0",
+  "description": "A stateful Node.js application for Dokku with PostgreSQL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.11.5",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

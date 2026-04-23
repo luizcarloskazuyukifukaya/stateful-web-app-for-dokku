@@ -88,6 +88,16 @@
         }
         textarea { min-height: 150px; font-family: monospace; }
 
+        /* Custom Time Input Group */
+        .time-input-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .time-input-group input[type="date"] { flex: 2; }
+        .time-input-group input[type="number"] { flex: 1; text-align: center; }
+        .time-input-group span { font-weight: bold; font-size: 1.2rem; }
+
         .error-message {
             color: var(--error-color);
             font-size: 0.85rem;
@@ -186,15 +196,28 @@
                         <option value="Others">Others</option>
                     </select>
                 </div>
+                
                 <div class="form-group">
-                    <label>Start Time</label>
-                    <input type="datetime-local" id="start" required onchange="validateTimes()">
+                    <label>Start Time (Date | Hour | Minute)</label>
+                    <div class="time-input-group">
+                        <input type="date" id="start-date" required onchange="validateTimes()">
+                        <input type="number" id="start-hour" min="0" max="23" placeholder="HH" required onchange="validateTimes()">
+                        <span>:</span>
+                        <input type="number" id="start-minute" min="0" max="59" placeholder="MM" required onchange="validateTimes()">
+                    </div>
                 </div>
+
                 <div class="form-group">
-                    <label>End Time</label>
-                    <input type="datetime-local" id="end" required onchange="validateTimes()">
+                    <label>End Time (Date | Hour | Minute)</label>
+                    <div class="time-input-group">
+                        <input type="date" id="end-date" required onchange="validateTimes()">
+                        <input type="number" id="end-hour" min="0" max="23" placeholder="HH" required onchange="validateTimes()">
+                        <span>:</span>
+                        <input type="number" id="end-minute" min="0" max="59" placeholder="MM" required onchange="validateTimes()">
+                    </div>
                     <div id="time-error" class="error-message">End time cannot be earlier than start time.</div>
                 </div>
+
                 <div class="form-group">
                     <label>Details (Markdown supported)</label>
                     <textarea id="details" placeholder="What did you do?"></textarea>
@@ -226,24 +249,32 @@
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
             
-            const formatted = `${year}-${month}-${day}T${hours}:${minutes}`;
-            document.getElementById('start').value = formatted;
-            document.getElementById('end').value = formatted;
+            const dateStr = `${year}-${month}-${day}`;
+            document.getElementById('start-date').value = dateStr;
+            document.getElementById('end-date').value = dateStr;
+            
+            document.getElementById('start-hour').value = now.getHours();
+            document.getElementById('start-minute').value = now.getMinutes();
+            document.getElementById('end-hour').value = now.getHours();
+            document.getElementById('end-minute').value = now.getMinutes();
+        }
+
+        function getFullDate(prefix) {
+            const date = document.getElementById(`${prefix}-date`).value;
+            const hour = String(document.getElementById(`${prefix}-hour`).value).padStart(2, '0');
+            const minute = String(document.getElementById(`${prefix}-minute`).value).padStart(2, '0');
+            if (!date || hour === "" || minute === "") return null;
+            return new Date(`${date}T${hour}:${minute}:00`);
         }
 
         function validateTimes() {
-            const startStr = document.getElementById('start').value;
-            const endStr = document.getElementById('end').value;
+            const start = getFullDate('start');
+            const end = getFullDate('end');
             const errorEl = document.getElementById('time-error');
             const saveBtn = document.getElementById('save-btn');
 
-            if (startStr && endStr) {
-                const start = new Date(startStr);
-                const end = new Date(endStr);
-                
+            if (start && end) {
                 if (end < start) {
                     errorEl.style.display = 'block';
                     saveBtn.disabled = true;
@@ -270,13 +301,18 @@
             if (!validateTimes()) return;
 
             const type = document.getElementById('type').value;
-            const start = document.getElementById('start').value;
-            const end = document.getElementById('end').value;
+            const start = getFullDate('start');
+            const end = getFullDate('end');
             
+            if (!start || !end) {
+                alert('Please fill in all time fields');
+                return;
+            }
+
             document.getElementById('confirm-summary').innerHTML = `
                 <p><strong>Type:</strong> ${type}</p>
-                <p><strong>From:</strong> ${start.replace('T', ' ')}</p>
-                <p><strong>To:</strong> ${end.replace('T', ' ')}</p>
+                <p><strong>From:</strong> ${start.toLocaleString()}</p>
+                <p><strong>To:</strong> ${end.toLocaleString()}</p>
             `;
             document.getElementById('modal-overlay').style.display = 'flex';
         }
@@ -286,10 +322,13 @@
         }
 
         async function saveActivity() {
+            const start = getFullDate('start');
+            const end = getFullDate('end');
+
             const data = {
                 activity_type: document.getElementById('type').value,
-                start_time: document.getElementById('start').value,
-                end_time: document.getElementById('end').value,
+                start_time: start.toISOString(),
+                end_time: end.toISOString(),
                 details: document.getElementById('details').value
             };
 

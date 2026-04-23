@@ -5,6 +5,7 @@ APP_NAME="daily-activity-log"
 DB_NAME="activity-db"
 HOST_PORT=8082
 CONTAINER_PORT=5000
+GITHUB_USER="luizcarloskazuyukifukaya"
 
 echo "🚀 Starting deployment for $APP_NAME..."
 
@@ -23,7 +24,7 @@ sudo dokku postgres:link $DB_NAME $APP_NAME || echo "DB already linked"
 
 # 4. Resource Limits
 echo "Setting memory limit to 512MB..."
-sudo dokku resource:set $APP_NAME --memory 512m
+sudo dokku resource:limit $APP_NAME --memory 512m || sudo dokku resource:set $APP_NAME --memory 512m
 
 # 5. Git & Deployment
 echo "Committing and pushing code..."
@@ -32,7 +33,7 @@ echo "Committing and pushing code..."
 git config user.email "luizcarloskazuyukifukaya@gmail.com"
 
 git add .
-git commit -m "Deploy Daily Activity Log with PostgreSQL and split-screen UI" || echo "Nothing to commit"
+git commit -m "Secure deployment script and update configuration" || echo "Nothing to commit"
 
 # Push to Dokku
 echo "Pushing to Dokku..."
@@ -43,10 +44,11 @@ git push dokku master
 
 # Push to GitHub
 echo "Pushing to GitHub..."
-if git remote | grep -q "origin"; then
-    git push origin master
+if [ -n "$GITHUB_PAT" ]; then
+    git push https://$GITHUB_USER:$GITHUB_PAT@github.com/$GITHUB_USER/stateful-web-app-for-dokku.git master
 else
-    echo "⚠️  GitHub remote 'origin' not found. Skipping push."
+    echo "⚠️  GITHUB_PAT environment variable not set. Skipping GitHub push."
+    echo "To push, use: GITHUB_PAT=your_token ./deploy-to-dokku.sh"
 fi
 
 echo "✅ Deployment complete!"

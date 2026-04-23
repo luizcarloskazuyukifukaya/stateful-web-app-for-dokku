@@ -17,7 +17,6 @@ A stateful Node.js application to log and view daily activities with Markdown su
 2. Set up a local PostgreSQL instance and provide the connection string in a `.env` file:
    ```env
    DATABASE_URL=postgres://user:password@localhost:5432/dbname
-   GOOGLE_API_KEY=your_test_key
    ```
 3. Run the app:
    ```bash

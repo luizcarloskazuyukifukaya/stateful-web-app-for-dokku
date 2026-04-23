@@ -79,7 +79,6 @@ app.post('/api/activities', async (req, res) => {
 app.get('/api/info', (req, res) => {
   res.json({
     node_version: process.version,
-    has_api_key: !!process.env.GOOGLE_API_KEY,
     database_connected: !!process.env.DATABASE_URL
   });
 });

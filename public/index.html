@@ -13,6 +13,8 @@
             --sidebar-bg: #202124;
             --text-color: #3c4043;
             --error-color: #d93025;
+            --header-bg: #e8eaed;
+            --md-heading-color: #4285f4;
         }
 
         body {
@@ -68,12 +70,27 @@
             max-width: 800px;
             margin: 0 auto;
             background: white;
-            padding: 2rem;
+            padding: 0;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            overflow: hidden;
         }
 
-        h1 { margin-top: 0; color: var(--primary-color); }
+        .container-header {
+            background-color: var(--header-bg);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #dadce0;
+        }
+
+        .container-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #202124;
+        }
+
+        .container-body {
+            padding: 2rem;
+        }
 
         /* Form Styling */
         .form-group { margin-bottom: 1.5rem; position: relative; }
@@ -88,7 +105,6 @@
         }
         textarea { min-height: 150px; font-family: monospace; }
 
-        /* Custom Time Input Group */
         .time-input-group {
             display: flex;
             gap: 0.5rem;
@@ -152,6 +168,7 @@
             border-bottom: 1px solid #e8eaed;
             padding: 1.5rem 0;
         }
+        .activity-card:last-child { border-bottom: none; }
         .activity-header {
             display: flex;
             justify-content: space-between;
@@ -167,9 +184,27 @@
             font-weight: bold;
         }
         .activity-time { font-size: 0.9rem; color: #5f6368; }
+        
+        /* Markdown Overrides */
         .activity-details {
             line-height: 1.6;
-            color: #3c4043;
+            color: var(--text-color);
+        }
+        .activity-details h1, .activity-details h2, .activity-details h3, 
+        .activity-details h4, .activity-details h5, .activity-details h6 {
+            color: var(--md-heading-color);
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .activity-details h1 { font-size: 1.4rem; }
+        .activity-details h2 { font-size: 1.2rem; }
+        .activity-details h3 { font-size: 1.1rem; }
+        .activity-details blockquote {
+            border-left: 4px solid #dadce0;
+            margin: 1rem 0;
+            padding-left: 1rem;
+            color: #5f6368;
+            font-style: italic;
         }
     </style>
 </head>
@@ -181,54 +216,64 @@
     </div>
 
     <div class="main-content">
+        <!-- Log Activities View -->
         <div id="log-view" class="container">
-            <h1>Log New Activity</h1>
-            <form id="activity-form">
-                <div class="form-group">
-                    <label>Activity Type</label>
-                    <select id="type" required>
-                        <option value="Study">Study</option>
-                        <option value="Work">Work</option>
-                        <option value="Workout">Workout</option>
-                        <option value="Lecture">Lecture</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Travel">Travel</option>
-                        <option value="Others">Others</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Start Time (Date | Hour | Minute)</label>
-                    <div class="time-input-group">
-                        <input type="date" id="start-date" required onchange="validateTimes()">
-                        <input type="number" id="start-hour" min="0" max="23" placeholder="HH" required onchange="validateTimes()">
-                        <span>:</span>
-                        <input type="number" id="start-minute" min="0" max="59" placeholder="MM" required onchange="validateTimes()">
+            <div class="container-header">
+                <h1>Log New Activity</h1>
+            </div>
+            <div class="container-body">
+                <form id="activity-form">
+                    <div class="form-group">
+                        <label>Activity Type</label>
+                        <select id="type" required>
+                            <option value="Study">Study</option>
+                            <option value="Work">Work</option>
+                            <option value="Workout">Workout</option>
+                            <option value="Lecture">Lecture</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Travel">Travel</option>
+                            <option value="Others">Others</option>
+                        </select>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label>End Time (Date | Hour | Minute)</label>
-                    <div class="time-input-group">
-                        <input type="date" id="end-date" required onchange="validateTimes()">
-                        <input type="number" id="end-hour" min="0" max="23" placeholder="HH" required onchange="validateTimes()">
-                        <span>:</span>
-                        <input type="number" id="end-minute" min="0" max="59" placeholder="MM" required onchange="validateTimes()">
+                    
+                    <div class="form-group">
+                        <label>Start Time (Date | Hour | Minute)</label>
+                        <div class="time-input-group">
+                            <input type="date" id="start-date" required onchange="validateTimes()">
+                            <input type="number" id="start-hour" min="0" max="23" placeholder="HH" required onchange="validateTimes()">
+                            <span>:</span>
+                            <input type="number" id="start-minute" min="0" max="59" placeholder="MM" required onchange="validateTimes()">
+                        </div>
                     </div>
-                    <div id="time-error" class="error-message">End time cannot be earlier than start time.</div>
-                </div>
 
-                <div class="form-group">
-                    <label>Details (Markdown supported)</label>
-                    <textarea id="details" placeholder="What did you do?"></textarea>
-                </div>
-                <button type="button" id="save-btn" onclick="confirmSave()">Save Activity</button>
-            </form>
+                    <div class="form-group">
+                        <label>End Time (Date | Hour | Minute)</label>
+                        <div class="time-input-group">
+                            <input type="date" id="end-date" required onchange="validateTimes()">
+                            <input type="number" id="end-hour" min="0" max="23" placeholder="HH" required onchange="validateTimes()">
+                            <span>:</span>
+                            <input type="number" id="end-minute" min="0" max="59" placeholder="MM" required onchange="validateTimes()">
+                        </div>
+                        <div id="time-error" class="error-message">End time cannot be earlier than start time.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Details (Markdown supported)</label>
+                        <textarea id="details" placeholder="What did you do?"></textarea>
+                    </div>
+                    <button type="button" id="save-btn" onclick="confirmSave()">Save Activity</button>
+                </form>
+            </div>
         </div>
 
+        <!-- View Activities View -->
         <div id="view-view" class="container" style="display: none;">
-            <h1>Recent Activities</h1>
-            <div id="activities-list">Loading...</div>
+            <div class="container-header">
+                <h1>Recent Activities</h1>
+            </div>
+            <div class="container-body">
+                <div id="activities-list">Loading...</div>
+            </div>
         </div>
     </div>
 
